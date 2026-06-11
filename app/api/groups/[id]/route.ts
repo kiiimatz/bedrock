@@ -6,7 +6,27 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (!await checkAuth(request)) return unauthorized();
   const { env } = await getCloudflareContext({ async: true });
   const { id } = await params;
-  const body = await request.json() as { name?: string };
+  const body = await request.json() as { name?: string; clearServices?: boolean };
+
+  if (body.clearServices) {
+    const grp = await env.DB.prepare('SELECT name FROM groups WHERE id = ?').bind(id).first() as { name: string } | null;
+    if (!grp) return Response.json({ error: 'Not found' }, { status: 404 });
+    const { results: toDelete } = await env.DB.prepare(
+      'SELECT id FROM services WHERE group_name = ?'
+    ).bind(grp.name).all();
+    if (toDelete.length) {
+      const stmts = toDelete.flatMap((r: Record<string, unknown>) => {
+        const row = r as { id: number };
+        return [
+          env.DB.prepare('DELETE FROM services WHERE id = ?').bind(row.id),
+          env.DB.prepare('DELETE FROM service_days WHERE service_id = ?').bind(row.id),
+        ];
+      });
+      await env.DB.batch(stmts);
+    }
+    return Response.json({ ok: true });
+  }
+
   if (body.name !== undefined) {
     const name = (body.name || '').trim();
     if (!name) return Response.json({ error: 'name required' }, { status: 400 });

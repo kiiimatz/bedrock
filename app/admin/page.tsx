@@ -38,6 +38,7 @@ function GroupsList({ groups, services, onRefresh }: {
   const [editId, setEditId] = useState<number | null>(null);
   const [editName, setEditName] = useState('');
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [clearId, setClearId] = useState<number | null>(null);
   const [dragId, setDragId] = useState<number | null>(null);
   const [localGroups, setLocalGroups] = useState(groups);
   const dropRef = useRef<number | null>(null);
@@ -66,6 +67,16 @@ function GroupsList({ groups, services, onRefresh }: {
       body: JSON.stringify({ name: editName.trim() }),
     });
     setEditId(null);
+    onRefresh();
+  }
+
+  async function clearGroupServices(id: number) {
+    await fetch(`/api/groups/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clearServices: true }),
+    });
+    setClearId(null);
     onRefresh();
   }
 
@@ -103,7 +114,7 @@ function GroupsList({ groups, services, onRefresh }: {
     <div className="card">
       <div className="card-hd">
         <span className="card-title">Groups</span>
-        <span className="card-hint">Drag to reorder · Double-click name to rename</span>
+        <span className="card-hint">Drag to reorder · Click <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="11" height="11" style={{display:'inline',verticalAlign:'middle'}}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> to rename</span>
       </div>
       <div className="card-body">
         <div className="row2" style={{ alignItems: 'flex-end' }}>
@@ -161,12 +172,33 @@ function GroupsList({ groups, services, onRefresh }: {
               <span className="grp-row-count">{cnt[g.name] || 0} services</span>
               <button
                 className="icon-btn"
-                onClick={() => setDeleteId(g.id)}
+                onClick={() => { setEditId(g.id); setEditName(g.name); setClearId(null); setDeleteId(null); }}
+                title="Rename group"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button
+                className="icon-btn"
+                onClick={() => { setClearId(g.id); setDeleteId(null); setEditId(null); }}
+                title="Delete all services in group"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
+              </button>
+              <button
+                className="icon-btn"
+                onClick={() => { setDeleteId(g.id); setClearId(null); setEditId(null); }}
                 title="Delete group"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
               </button>
             </div>
+            {clearId === g.id && (
+              <div className="grp-del-confirm">
+                <span>Delete all services in "{g.name}"?</span>
+                <button className="btn btn-sm btn-danger" onClick={() => clearGroupServices(g.id)}>Delete all services</button>
+                <button className="btn btn-sm btn-ghost" onClick={() => setClearId(null)}>Cancel</button>
+              </div>
+            )}
             {deleteId === g.id && (
               <div className="grp-del-confirm">
                 <span>Delete "{g.name}"?</span>
