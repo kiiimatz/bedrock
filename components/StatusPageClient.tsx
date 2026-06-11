@@ -23,8 +23,9 @@ function ServiceItem({ svc }: { svc: Service }) {
     const h = history[j];
     const d = history.length - j;
     const label = d === 1 ? 'Today' : d === history.length ? '90 days ago' : `${d} days ago`;
+    const clsLabel: Record<string, string> = { up: 'Operational', degraded: 'Degraded', down: 'Down' };
     const value  = h === null ? 'No data'
-      : h.cls ? h.cls.charAt(0).toUpperCase() + h.cls.slice(1)
+      : h.cls ? (clsLabel[h.cls] ?? (h.cls.charAt(0).toUpperCase() + h.cls.slice(1)))
       : `${h.pct.toFixed(1)}%`;
     if (tipDateRef.current) tipDateRef.current.textContent = label;
     if (tipValRef.current)  tipValRef.current.textContent  = value;
