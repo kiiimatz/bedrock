@@ -9,5 +9,5 @@ export default async function StatusPage() {
     getIncidents(),
   ]);
 
-  return <StatusPageClient initialServices={services} initialIncidents={incidents} />;
+  return <StatusPageClient initialServices={services} initialIncidents={incidents} initialUpdatedAt={Date.now()} />;
 }

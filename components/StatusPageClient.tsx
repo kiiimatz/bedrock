@@ -124,12 +124,13 @@ function ServiceItem({ svc }: { svc: Service }) {
 interface Props {
   initialServices: Service[];
   initialIncidents: Incident[];
+  initialUpdatedAt: number;
 }
 
-export default function StatusPageClient({ initialServices, initialIncidents }: Props) {
+export default function StatusPageClient({ initialServices, initialIncidents, initialUpdatedAt }: Props) {
   const [services, setServices] = useState<Service[]>(initialServices);
   const [incidents, setIncidents] = useState<Incident[]>(initialIncidents);
-  const [updated, setUpdated] = useState('');
+  const [updated, setUpdated] = useState(() => 'Updated ' + new Date(initialUpdatedAt).toLocaleTimeString());
   const [incOpen, setIncOpen] = useState(false);
   const incSectionRef = useRef<HTMLDivElement>(null);
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -163,8 +164,6 @@ export default function StatusPageClient({ initialServices, initialIncidents }: 
   }
 
   useEffect(() => {
-    // Set initial "updated" timestamp without triggering a fetch
-    setUpdated('Updated ' + new Date().toLocaleTimeString());
     const t = setInterval(load, 60000);
     return () => clearInterval(t);
   }, []);
@@ -227,7 +226,7 @@ export default function StatusPageClient({ initialServices, initialIncidents }: 
           <span className="logo-text">bedrock</span>
         </div>
         <div className="header-right">
-          <span className="updated-label">{updated}</span>
+          <span className="updated-label" suppressHydrationWarning>{updated}</span>
           <button className="theme-toggle" onClick={toggleTheme} title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
             {theme === 'dark' ? (
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
