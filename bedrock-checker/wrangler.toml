@@ -1,0 +1,11 @@
+name            = "bedrock-checker"
+main            = "worker.js"
+compatibility_date = "2024-09-23"
+
+[[d1_databases]]
+binding       = "DB"
+database_name = "bedrock"
+database_id   = "23df5e56-a8d2-4490-983a-cce160802e85"
+
+[triggers]
+crons = ["* * * * *"]

@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# OpenNext build output
+.open-next/
+
+# Vercel
+.vercel/
+
+# Wrangler temp/build files
+.wrangler/tmp/
+.wrangler/state/
+.wrangler/cache/
+
+# bedrock-checker wrangler cache
+bedrock-checker/.wrangler/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.dev.vars
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bedrock — admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <div id="viewLogin" class="view-login">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/>
+            <line x1="12" y1="7" x2="5" y2="17"/><line x1="12" y1="7" x2="19" y2="17"/><line x1="5" y1="19" x2="19" y2="19"/>
+          </svg>
+        </div>
+        <span class="logo-text">bedrock <span class="logo-sub">/ admin</span></span>
+      </div>
+      <p class="login-sub">Sign in to manage services, incidents, and maintenance.</p>
+      <div class="login-err" id="loginErr">Incorrect username or password.</div>
+      <div class="field"><label for="loginUser">Username</label><input id="loginUser" type="text" value="admin" autocomplete="username" /></div>
+      <div class="field"><label for="loginPass">Password</label><input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" /></div>
+      <div class="login-footer">
+        <a href="/" class="btn btn-ghost btn-icon" aria-label="Back to status page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+        </a>
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="doLogin()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Sign in
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="viewAdmin" class="view-admin" style="display:none">
+    <div class="page">
+      <header class="admin-header">
+        <div class="admin-logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/>
+              <line x1="12" y1="7" x2="5" y2="17"/><line x1="12" y1="7" x2="19" y2="17"/><line x1="5" y1="19" x2="19" y2="19"/>
+            </svg>
+          </div>
+          <span class="logo-text">bedrock</span>
+          <span class="admin-badge">admin</span>
+        </div>
+        <div class="admin-actions">
+          <a href="/" class="btn btn-ghost btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Status page
+          </a>
+          <button class="btn btn-ghost btn-sm" onclick="logout()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign out
+          </button>
+        </div>
+      </header>
+
+      <nav class="nav" role="tablist">
+        <button class="nav-btn active" role="tab" aria-selected="true" onclick="switchTab(this,'tabSvc')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          Services
+        </button>
+        <button class="nav-btn" role="tab" aria-selected="false" onclick="switchTab(this,'tabInc')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Incidents
+        </button>
+        <button class="nav-btn" role="tab" aria-selected="false" onclick="switchTab(this,'tabMt')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Maintenance
+        </button>
+      </nav>
+
+      <!-- ── Services tab ─────────────────────────────────────────────────────── -->
+      <div id="tabSvc" class="tab active">
+
+        <!-- Groups management -->
+        <div class="card">
+          <div class="card-hd"><span class="card-title">Groups</span><span class="card-hint">Drag to reorder · Double-click name to rename</span></div>
+          <div class="card-body">
+            <div class="row2" style="align-items:flex-end">
+              <div class="field"><label>Group name</label><input id="ng-name" placeholder="Relays" onkeydown="if(event.key==='Enter')addGroup()" /></div>
+              <div class="field align-end">
+                <button class="btn btn-ghost w-full" onclick="addGroup()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Add group
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="groupList"></div>
+        </div>
+
+        <!-- Add service -->
+        <div class="card">
+          <div class="card-hd"><span class="card-title">Add service</span></div>
+          <div class="card-body">
+            <div class="row3">
+              <div class="field"><label>Service name</label><input id="ns-name" placeholder="Tokyo-A Relay" /></div>
+              <div class="field"><label>Group</label>
+                <select id="ns-group"><option value="">— ungrouped —</option></select>
+              </div>
+              <div class="field"><label>Initial status</label>
+                <select id="ns-status"><option value="up">up</option><option value="degraded">degraded</option><option value="down">down</option></select>
+              </div>
+            </div>
+            <div class="section-label" style="margin-bottom:8px">Protocols / endpoints</div>
+            <div id="ns-protos"></div>
+            <div class="row4" id="np-add-row">
+              <div class="field"><label>Protocol</label>
+                <select id="np-proto" onchange="onProtoChange(this.value,'np-port-wrap','np-add-row')"><option>TCP</option><option>UDP</option><option>HTTP</option><option>HTTPS</option><option>QUIC</option></select>
+              </div>
+              <div class="field" id="np-port-wrap"><label>Port</label><input id="np-port" placeholder="3000" /></div>
+              <div class="field"><label>IP / Host / URL</label><input id="np-ip" placeholder="example.com or https://…" /></div>
+              <div class="field align-end">
+                <button class="btn btn-ghost w-full" onclick="addProto()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Add
+                </button>
+              </div>
+            </div>
+            <div class="flex-end">
+              <button class="btn btn-primary" onclick="addService()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                Save service
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service list -->
+        <div class="card">
+          <div class="card-hd"><span class="card-title">All services</span><span class="card-hint">Drag services between groups · Drag group header to reorder groups</span></div>
+          <div id="svcList"></div>
+        </div>
+      </div>
+
+      <!-- ── Incidents tab ────────────────────────────────────────────────────── -->
+      <div id="tabInc" class="tab">
+        <div class="card">
+          <div class="card-hd"><span class="card-title">Post incident</span></div>
+          <div class="card-body">
+            <div class="row2">
+              <div class="field"><label>Title</label><input id="inc-title" placeholder="Elevated latency on Tokyo-A" /></div>
+              <div class="field"><label>Affected service</label><select id="inc-svc"><option value="">All services</option></select></div>
+            </div>
+            <div class="field mb8"><label>Message</label><textarea id="inc-msg" placeholder="We are investigating…"></textarea></div>
+            <div class="flex-end">
+              <button class="btn btn-primary" onclick="postIncident()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Post
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><span class="card-title">Active &amp; recent</span></div>
+          <div id="incList"></div>
+        </div>
+      </div>
+
+      <!-- ── Maintenance tab ─────────────────────────────────────────────────── -->
+      <div id="tabMt" class="tab">
+        <div class="card">
+          <div class="card-hd"><span class="card-title">Schedule maintenance</span></div>
+          <div class="card-body">
+            <div class="row2">
+              <div class="field"><label>Title</label><input id="mt-title" placeholder="TLS certificate renewal" /></div>
+              <div class="field"><label>Affected service</label><select id="mt-svc"><option value="">All services</option></select></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label>Start</label><input type="datetime-local" id="mt-start" /></div>
+              <div class="field"><label>End</label><input type="datetime-local" id="mt-end" /></div>
+            </div>
+            <div class="flex-end">
+              <button class="btn btn-primary" onclick="addMaint()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg>
+                Schedule
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><span class="card-title">Upcoming</span></div>
+          <div id="mtList"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+  let newProtos  = [];
+  let GROUPS     = [];
+  let _svcCache  = [];
+  let _editState = {};
+
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  async function api(path, method = 'GET', body = null) {
+    const opts = { method, headers: { 'Content-Type': 'application/json' } };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(path, opts);
+    if (res.status === 401) { showLogin(); throw new Error('Unauthorized'); }
+    return res;
+  }
+
+  function showLogin() {
+    document.getElementById('viewAdmin').style.display = 'none';
+    document.getElementById('viewLogin').style.display = 'flex';
+  }
+
+  // ── Auth ──────────────────────────────────────────────────────────────────────
+
+  async function doLogin() {
+    const u = document.getElementById('loginUser').value;
+    const p = document.getElementById('loginPass').value;
+    const err = document.getElementById('loginErr');
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u, password: p })
+      });
+      if (res.ok) {
+        document.getElementById('viewLogin').style.display = 'none';
+        document.getElementById('viewAdmin').style.display = 'block';
+        renderAll();
+      } else {
+        const data = await res.json();
+        err.textContent = data.error || 'Incorrect username or password.';
+        err.style.display = 'block';
+        setTimeout(() => err.style.display = 'none', 3000);
+      }
+    } catch(e) {
+      err.style.display = 'block';
+      setTimeout(() => err.style.display = 'none', 3000);
+    }
+  }
+
+  async function logout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    document.getElementById('loginPass').value = '';
+    showLogin();
+  }
+
+  function switchTab(btn, id) {
+    document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active'); btn.setAttribute('aria-selected','true');
+    document.getElementById(id).classList.add('active');
+  }
+
+  // ── Drag-and-drop ─────────────────────────────────────────────────────────────
+
+  let _dragEl = null;
+
+  function _clearDragUi() {
+    document.querySelectorAll('.drag-over, .zone-drag-over, .drop-before, .drop-after, .svc-top-target')
+      .forEach(el => el.classList.remove('drag-over', 'zone-drag-over', 'drop-before', 'drop-after', 'svc-top-target'));
+  }
+
+  function dndEnd(e) {
+    if (_dragEl) _dragEl.classList.remove('dragging');
+    _clearDragUi();
+    _dragEl = null;
+  }
+
+  // ── GROUPS list DnD (top section) ────────────────────────────────────────────
+
+  function dndStart(e) {
+    _dragEl = e.currentTarget;
+    _dragEl._dndType = 'grp-list';
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', '');
+    setTimeout(() => _dragEl?.classList.add('dragging'), 0);
+  }
+  function dndOver(e) {
+    if (!_dragEl || _dragEl._dndType !== 'grp-list' || _dragEl === e.currentTarget) return;
+    if (_dragEl.parentElement !== e.currentTarget.parentElement) return;
+    e.preventDefault();
+    _clearDragUi();
+    e.currentTarget.classList.add('drag-over');
+  }
+  function dndLeave(e) {
+    if (!e.relatedTarget || !e.currentTarget.contains(e.relatedTarget))
+      e.currentTarget.classList.remove('drag-over');
+  }
+  function dndDrop(e) {
+    e.preventDefault();
+    _clearDragUi();
+    if (!_dragEl || _dragEl._dndType !== 'grp-list' || _dragEl === e.currentTarget) return;
+    if (_dragEl.parentElement !== e.currentTarget.parentElement) return;
+    const parent = e.currentTarget.parentElement;
+    const rect   = e.currentTarget.getBoundingClientRect();
+    if (e.clientY < rect.top + rect.height / 2) parent.insertBefore(_dragEl, e.currentTarget);
+    else parent.insertBefore(_dragEl, e.currentTarget.nextSibling);
+    const ids = [...parent.querySelectorAll(':scope > [data-id]')].map(el => +el.dataset.id);
+    api('/api/groups/reorder', 'POST', { ids }).catch(() => {});
+  }
+
+  // ── Service DnD ──────────────────────────────────────────────────────────────
+
+  function svcDragStart(e) {
+    e.stopPropagation();
+    _dragEl = e.currentTarget;
+    _dragEl._dndType = 'svc';
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', '');
+    setTimeout(() => _dragEl?.classList.add('dragging'), 0);
+  }
+
+  function svcDragOver(e) {
+    if (!_dragEl || _dragEl._dndType !== 'svc' || _dragEl === e.currentTarget) return;
+    e.preventDefault();
+    e.stopPropagation();
+    _clearDragUi();
+    const rect = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.classList.add(e.clientY < rect.top + rect.height / 2 ? 'drop-before' : 'drop-after');
+  }
+
+  function svcDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!_dragEl || _dragEl._dndType !== 'svc' || _dragEl === e.currentTarget) return;
+    const fromZone = _dragEl.closest('.all-zone');
+    const toZone   = e.currentTarget.closest('.all-zone');
+    if (!toZone) return;
+    const before = e.currentTarget.classList.contains('drop-before');
+    _clearDragUi();
+    if (before) toZone.insertBefore(_dragEl, e.currentTarget);
+    else toZone.insertBefore(_dragEl, e.currentTarget.nextSibling);
+    _finalizeSvcDrop(_dragEl, fromZone, toZone);
+  }
+
+  function zoneDragOver(e) {
+    if (!_dragEl || _dragEl._dndType !== 'svc') return;
+    e.preventDefault();
+    _clearDragUi();
+    if (_dragEl.closest('.all-zone') !== e.currentTarget) e.currentTarget.classList.add('zone-drag-over');
+  }
+
+  function zoneDragLeave(e) {
+    if (!e.relatedTarget || !e.currentTarget.contains(e.relatedTarget))
+      e.currentTarget.classList.remove('zone-drag-over');
+  }
+
+  function zoneDrop(e) {
+    e.preventDefault();
+    _clearDragUi();
+    if (!_dragEl || _dragEl._dndType !== 'svc') return;
+    const fromZone = _dragEl.closest('.all-zone');
+    const toZone   = e.currentTarget;
+    toZone.appendChild(_dragEl);
+    _finalizeSvcDrop(_dragEl, fromZone, toZone);
+  }
+
+  function _finalizeSvcDrop(el, fromZone, toZone) {
+    const svcId    = +el.dataset.id;
+    const newGroup = toZone.dataset.gname;
+    if (fromZone !== toZone) api(`/api/services/${svcId}`, 'PATCH', { group: newGroup }).catch(() => {});
+    const ids = [...toZone.querySelectorAll(':scope > .svc-entry')].map(e => +e.dataset.id);
+    if (ids.length) api('/api/services/reorder', 'POST', { ids }).catch(() => {});
+  }
+
+  // ── Group block DnD ──────────────────────────────────────────────────────────
+
+  function grpHdDragStart(e) {
+    e.stopPropagation();
+    _dragEl = e.currentTarget.closest('.all-grp-block');
+    _dragEl._dndType = 'grp';
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', '');
+    e.dataTransfer.setDragImage(e.currentTarget, 14, 14);
+    setTimeout(() => _dragEl?.classList.add('dragging'), 0);
+  }
+
+  function grpDragOver(e) {
+    if (!_dragEl || _dragEl._dndType !== 'grp' || _dragEl === e.currentTarget) return;
+    if (_dragEl.parentElement !== e.currentTarget.parentElement) return;
+    e.preventDefault();
+    e.stopPropagation();
+    _clearDragUi();
+    const rect = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.classList.add(e.clientY < rect.top + rect.height / 2 ? 'drop-before' : 'drop-after');
+  }
+
+  function grpDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!_dragEl || _dragEl._dndType !== 'grp' || _dragEl === e.currentTarget) return;
+    if (_dragEl.parentElement !== e.currentTarget.parentElement) return;
+    const parent = e.currentTarget.parentElement;
+    const before = e.currentTarget.classList.contains('drop-before');
+    _clearDragUi();
+    if (before) parent.insertBefore(_dragEl, e.currentTarget);
+    else parent.insertBefore(_dragEl, e.currentTarget.nextSibling);
+    const ids = [...parent.querySelectorAll(':scope > .all-grp-block')].map(el => +el.dataset.gid);
+    api('/api/groups/reorder', 'POST', { ids }).catch(() => {});
+  }
+
+  // Drop a service onto a group header → inserts it as the first item in that group
+  function grpHdSvcOver(e) {
+    if (!_dragEl || _dragEl._dndType !== 'svc') return;
+    e.preventDefault();
+    e.stopPropagation();
+    _clearDragUi();
+    e.currentTarget.classList.add('svc-top-target');
+  }
+
+  function grpHdSvcDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    _clearDragUi();
+    if (!_dragEl || _dragEl._dndType !== 'svc') return;
+    const zone = e.currentTarget.closest('.all-grp-block')?.querySelector('.all-zone');
+    if (!zone) return;
+    const fromZone = _dragEl.closest('.all-zone');
+    const first = zone.querySelector(':scope > .svc-entry');
+    if (first) zone.insertBefore(_dragEl, first);
+    else zone.appendChild(_dragEl);
+    _finalizeSvcDrop(_dragEl, fromZone, zone);
+  }
+
+  // ── Groups ────────────────────────────────────────────────────────────────────
+
+  function gripIcon() {
+    return `<svg class="drag-grip" viewBox="0 0 10 16" fill="currentColor" width="10" height="14" aria-hidden="true">
+      <circle cx="3" cy="3" r="1.2"/><circle cx="7" cy="3" r="1.2"/>
+      <circle cx="3" cy="8" r="1.2"/><circle cx="7" cy="8" r="1.2"/>
+      <circle cx="3" cy="13" r="1.2"/><circle cx="7" cy="13" r="1.2"/>
+    </svg>`;
+  }
+
+  async function renderGroupList() {
+    const res = await api('/api/groups');
+    GROUPS = await res.json();
+    rebuildGroupSelect();
+
+    // Count services per group
+    const svcRes = await api('/api/services');
+    const services = await svcRes.json();
+    const cnt = {};
+    services.forEach(s => { const g = s.group || ''; cnt[g] = (cnt[g] || 0) + 1; });
+
+    const el = document.getElementById('groupList');
+    if (!GROUPS.length) {
+      el.innerHTML = '<div class="empty">No groups yet. Add one above.</div>';
+      return;
+    }
+    el.innerHTML = GROUPS.map(g => `
+      <div class="a-row" draggable="true" data-id="${g.id}"
+           ondragstart="dndStart(event,'group')" ondragover="dndOver(event)"
+           ondragleave="dndLeave(event)" ondragend="dndEnd(event)" ondrop="dndDrop(event)">
+        <div class="drag-handle" title="Drag to reorder">${gripIcon()}</div>
+        <div class="a-row-info">
+          <div class="a-row-name" id="grp-name-${g.id}"
+               ondblclick="startRename(${g.id})" title="Double-click to rename">${esc(g.name)}</div>
+          <div class="a-row-sub">${cnt[g.name] || 0} service${(cnt[g.name]||0) !== 1 ? 's' : ''}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="startRename(${g.id})" title="Rename group">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="deleteGroup(${g.id},false)" title="Delete group only — services move to ungrouped">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          Delete
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="deleteGroup(${g.id},true)" title="Delete group AND all services in it">
+          Delete all
+        </button>
+      </div>`).join('');
+  }
+
+  function rebuildGroupSelect() {
+    const base = '<option value="">— ungrouped —</option>' +
+      GROUPS.map(g => `<option value="${esc(g.name)}">${esc(g.name)}</option>`).join('');
+    document.getElementById('ns-group').innerHTML = base;
+  }
+
+  async function addGroup() {
+    const name = document.getElementById('ng-name').value.trim();
+    if (!name) { document.getElementById('ng-name').focus(); return; }
+    const res = await api('/api/groups', 'POST', { name });
+    if (!res.ok) { const d = await res.json(); alert(d.error || 'Failed'); return; }
+    document.getElementById('ng-name').value = '';
+    renderGroupList();
+    renderSvcList();
+  }
+
+  async function deleteGroup(id, deleteServices) {
+    const grp = GROUPS.find(g => g.id === id);
+    const msg = deleteServices
+      ? `Delete "${grp?.name}" AND all services in it? This cannot be undone.`
+      : `Delete group "${grp?.name}"? Services will be moved to ungrouped.`;
+    if (!confirm(msg)) return;
+    await api(`/api/groups/${id}?deleteServices=${deleteServices ? '1' : '0'}`, 'DELETE');
+    renderAll();
+  }
+
+  // ── Group rename ──────────────────────────────────────────────────────────────
+
+  function startRename(id) {
+    const nameEl = document.getElementById(`grp-name-${id}`);
+    if (!nameEl || nameEl.querySelector('input')) return; // already editing
+    const currentName = nameEl.textContent.trim();
+    nameEl.textContent = '';
+    const input = document.createElement('input');
+    input.className = 'grp-name-input';
+    input.value = currentName;
+    input.dataset.id   = id;
+    input.dataset.orig = currentName;
+    nameEl.appendChild(input);
+    // Use mousedown to prevent conflict with row drag
+    input.addEventListener('mousedown', e => e.stopPropagation());
+    input.addEventListener('blur', () => saveRename(input));
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter')  { e.preventDefault(); input.blur(); }
+      if (e.key === 'Escape') { e.preventDefault(); renderGroupList(); }
+    });
+    input.focus();
+    input.select();
+  }
+
+  async function saveRename(input) {
+    const id   = +input.dataset.id;
+    const orig = input.dataset.orig;
+    const name = input.value.trim();
+    if (!name || name === orig) { renderGroupList(); return; }
+    const res = await api(`/api/groups/${id}`, 'PATCH', { name });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      alert(d.error || 'Failed to rename');
+    }
+    renderAll();
+  }
+
+  // ── Protocols ─────────────────────────────────────────────────────────────────
+
+  function addProto() {
+    const proto = document.getElementById('np-proto').value;
+    const port  = document.getElementById('np-port').value.trim();
+    const ip    = document.getElementById('np-ip').value.trim();
+    if (!ip) { document.getElementById('np-ip').focus(); return; }
+    newProtos.push({ proto, ip, port });
+    renderNewProtos();
+    document.getElementById('np-port').value = '';
+    document.getElementById('np-ip').value   = '';
+  }
+
+  function renderNewProtos() {
+    document.getElementById('ns-protos').innerHTML = newProtos.map((p, i) => `
+      <div class="proto-row">
+        <span class="proto-pill ${esc(p.proto)}">${esc(p.proto)}</span>
+        <span class="proto-addr">${esc(p.ip)}:${esc(p.port || '—')}</span>
+        <button class="proto-del" onclick="delNewProto(${i})" aria-label="Remove">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>`).join('');
+  }
+
+  function delNewProto(i) { newProtos.splice(i, 1); renderNewProtos(); }
+
+  // ── Services ──────────────────────────────────────────────────────────────────
+
+  async function addService() {
+    // Auto-add if the user filled in the IP field but forgot to click Add
+    if (document.getElementById('np-ip').value.trim()) addProto();
+    const name   = document.getElementById('ns-name').value.trim();
+    const group  = document.getElementById('ns-group').value;
+    const status = document.getElementById('ns-status').value;
+    if (!name) { document.getElementById('ns-name').focus(); return; }
+    await api('/api/services', 'POST', { name, group, status, protocols: [...newProtos] });
+    document.getElementById('ns-name').value = '';
+    newProtos = []; renderNewProtos();
+    renderAll();
+  }
+
+  async function delService(id) {
+    if (!confirm('Delete this service?')) return;
+    await api(`/api/services/${id}`, 'DELETE');
+    renderAll();
+  }
+
+  async function setSvcStatus(id, val) {
+    await api(`/api/services/${id}`, 'PATCH', { status: val });
+    renderSvcList();
+  }
+
+  async function renderSvcList() {
+    const res = await api('/api/services');
+    const services = await res.json();
+    _svcCache = services;
+    const el = document.getElementById('svcList');
+
+    if (!services.length) {
+      el.innerHTML = '<div class="empty">No services yet. Add one above.</div>';
+      updateSvcSelects([]);
+      return;
+    }
+
+    const groupOrder = [];
+    const grouped    = {};
+    services.forEach(s => {
+      const g = s.group || '';
+      if (!(g in grouped)) { grouped[g] = []; groupOrder.push(g); }
+      grouped[g].push(s);
+    });
+
+    const groupIdMap = {};
+    GROUPS.forEach(g => { groupIdMap[g.name] = g.id; });
+
+    function buildEntry(s) {
+      const groupOpts = '<option value="">— ungrouped —</option>' +
+        GROUPS.map(gr => `<option value="${esc(gr.name)}"${s.group===gr.name?' selected':''}>${esc(gr.name)}</option>`).join('');
+      return `
+      <div class="svc-entry" data-id="${s.id}" draggable="true"
+           ondragstart="svcDragStart(event)" ondragover="svcDragOver(event)"
+           ondragend="dndEnd(event)" ondrop="svcDrop(event)">
+        <div class="a-row">
+          <div class="drag-handle" title="Drag to reorder">${gripIcon()}</div>
+          <div class="a-row-info">
+            <div class="a-row-name">${esc(s.name)}</div>
+            <div class="a-row-sub">${esc(s.group || 'ungrouped')} · ${(s.protocols||[]).map(p=>`<span class="proto-pill ${esc(p.proto)} sm">${esc(p.proto)}</span>`).join(' ')}</div>
+          </div>
+          <select class="status-sel" onchange="setSvcStatus(${s.id},this.value)">
+            <option value="up"       ${s.status==='up'       ?' selected':''}>up</option>
+            <option value="degraded" ${s.status==='degraded' ?' selected':''}>degraded</option>
+            <option value="down"     ${s.status==='down'     ?' selected':''}>down</option>
+          </select>
+          <div class="sdot ${esc(s.status)}"></div>
+          <button class="icon-btn" onclick="openEdit(${s.id})" title="Edit service">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="icon-btn" onclick="delService(${s.id})" aria-label="Delete">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+        <div class="svc-edit" id="svc-edit-${s.id}" style="display:none" ondragstart="event.stopPropagation()">
+          <div class="svc-edit-inner">
+            <div class="row3">
+              <div class="field"><label>Name</label><input id="ei-name-${s.id}" value="${esc(s.name)}" /></div>
+              <div class="field"><label>Group</label><select id="ei-group-${s.id}">${groupOpts}</select></div>
+              <div class="field"><label>Status</label>
+                <select id="ei-status-${s.id}">
+                  <option value="up"${s.status==='up'?' selected':''}>up</option>
+                  <option value="degraded"${s.status==='degraded'?' selected':''}>degraded</option>
+                  <option value="down"${s.status==='down'?' selected':''}>down</option>
+                </select>
+              </div>
+            </div>
+            <div class="section-label" style="margin-bottom:8px">Protocols / endpoints</div>
+            <div id="ei-protos-${s.id}"></div>
+            <div class="row4" id="ep-add-row-${s.id}" style="margin-top:6px">
+              <div class="field"><label>Protocol</label>
+                <select id="ep-proto-${s.id}" onchange="onProtoChange(this.value,'ep-port-wrap-${s.id}','ep-add-row-${s.id}')"><option>TCP</option><option>UDP</option><option>HTTP</option><option>HTTPS</option><option>QUIC</option></select>
+              </div>
+              <div class="field" id="ep-port-wrap-${s.id}"><label>Port</label><input id="ep-port-${s.id}" placeholder="3000" /></div>
+              <div class="field"><label>IP / Host / URL</label><input id="ep-ip-${s.id}" placeholder="example.com or https://…" /></div>
+              <div class="field align-end">
+                <button class="btn btn-ghost w-full" onclick="addEditProto(${s.id})">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Add
+                </button>
+              </div>
+            </div>
+            <div class="flex-end">
+              <button class="btn btn-ghost btn-sm" onclick="closeEdit(${s.id})">Cancel</button>
+              <button class="btn btn-primary btn-sm" onclick="saveEdit(${s.id})">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    const namedGroups = groupOrder.filter(g => g);
+    let html = '';
+
+    // Ungrouped zone — always shown when named groups exist so you can drop there to ungroup
+    const ungrouped = grouped[''] || [];
+    if (ungrouped.length || namedGroups.length) {
+      html += `<div class="all-zone all-ungrp-zone" data-gname=""
+        ondragover="zoneDragOver(event)" ondragleave="zoneDragLeave(event)" ondrop="zoneDrop(event)">
+        ${ungrouped.map(s => buildEntry(s)).join('')}
+        ${!ungrouped.length ? '<div class="all-zone-hint">— drop here to ungroup —</div>' : ''}
+      </div>`;
+    }
+
+    // Group blocks (draggable for group reorder)
+    namedGroups.forEach(g => {
+      const gid  = groupIdMap[g] || 0;
+      const svcs = grouped[g] || [];
+      html += `
+      <div class="all-grp-block" data-gid="${gid}" data-gname="${esc(g)}"
+           ondragover="grpDragOver(event)"
+           ondragend="dndEnd(event)" ondrop="grpDrop(event)">
+        <div class="all-grp-hd" draggable="true" ondragstart="grpHdDragStart(event)"
+             ondragover="grpHdSvcOver(event)" ondrop="grpHdSvcDrop(event)">
+          <div class="drag-handle">${gripIcon()}</div>
+          <span>${esc(g)}</span>
+        </div>
+        <div class="all-zone" data-gname="${esc(g)}"
+             ondragover="zoneDragOver(event)" ondragleave="zoneDragLeave(event)" ondrop="zoneDrop(event)">
+          ${svcs.map(s => buildEntry(s)).join('')}
+          ${!svcs.length ? '<div class="all-zone-hint">— empty —</div>' : ''}
+        </div>
+      </div>`;
+    });
+
+    el.innerHTML = html;
+    updateSvcSelects(services);
+  }
+
+  // ── Service edit ──────────────────────────────────────────────────────────────
+
+  function openEdit(id) {
+    const svc = _svcCache.find(s => s.id === id);
+    if (!svc) return;
+    _editState[id] = { protos: JSON.parse(JSON.stringify(svc.protocols || [])) };
+    renderEditProtos(id);
+    document.getElementById(`svc-edit-${id}`).style.display = 'block';
+  }
+
+  function closeEdit(id) {
+    document.getElementById(`svc-edit-${id}`).style.display = 'none';
+    delete _editState[id];
+  }
+
+  function renderEditProtos(id) {
+    const protos = (_editState[id] || {}).protos || [];
+    const el = document.getElementById(`ei-protos-${id}`);
+    if (!el) return;
+    if (!protos.length) {
+      el.innerHTML = '<div style="font-size:11px;color:var(--text-tertiary);margin-bottom:6px">No protocols configured yet.</div>';
+      return;
+    }
+    el.innerHTML = protos.map((p, i) => {
+      const needsPort = p.proto === 'TCP' || p.proto === 'UDP' || p.proto === 'QUIC';
+      const protoOpts = ['TCP','UDP','HTTP','HTTPS','QUIC']
+        .map(pr => `<option${p.proto===pr?' selected':''}>${pr}</option>`).join('');
+      return `
+      <div class="proto-row" style="gap:6px">
+        <select class="proto-edit-sel" onchange="editProtoFieldChange(${id},${i},this.value)">${protoOpts}</select>
+        <input class="proto-edit-ip" id="ep-edit-ip-${id}-${i}" value="${esc(p.ip)}" placeholder="IP / Host / URL" />
+        <input class="proto-edit-port" id="ep-edit-port-${id}-${i}" value="${esc(p.port)}" placeholder="port" style="${needsPort?'':'display:none'}" />
+        <button class="proto-del" onclick="delEditProto(${id},${i})" aria-label="Remove">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>`;
+    }).join('');
+  }
+
+  function editProtoFieldChange(id, i, proto) {
+    // Update stored proto value and toggle port visibility
+    if (_editState[id]) _editState[id].protos[i].proto = proto;
+    const needsPort = proto === 'TCP' || proto === 'UDP' || proto === 'QUIC';
+    const portEl = document.getElementById(`ep-edit-port-${id}-${i}`);
+    if (portEl) portEl.style.display = needsPort ? '' : 'none';
+  }
+
+  function _captureEditProtos(id) {
+    // Sync current DOM input values back into _editState before structural changes
+    const protos = (_editState[id] || {}).protos || [];
+    protos.forEach((_, i) => {
+      const ipEl   = document.getElementById(`ep-edit-ip-${id}-${i}`);
+      const portEl = document.getElementById(`ep-edit-port-${id}-${i}`);
+      if (ipEl)   protos[i].ip   = ipEl.value.trim();
+      if (portEl) protos[i].port = portEl.value.trim();
+    });
+  }
+
+  function addEditProto(id) {
+    _captureEditProtos(id);
+    const proto = document.getElementById(`ep-proto-${id}`).value;
+    const port  = document.getElementById(`ep-port-${id}`).value.trim();
+    const ip    = document.getElementById(`ep-ip-${id}`).value.trim();
+    if (!ip) { document.getElementById(`ep-ip-${id}`).focus(); return; }
+    if (!_editState[id]) _editState[id] = { protos: [] };
+    _editState[id].protos.push({ proto, ip, port });
+    renderEditProtos(id);
+    document.getElementById(`ep-port-${id}`).value = '';
+    document.getElementById(`ep-ip-${id}`).value   = '';
+  }
+
+  function delEditProto(id, i) {
+    _captureEditProtos(id);
+    if (_editState[id]) { _editState[id].protos.splice(i, 1); renderEditProtos(id); }
+  }
+
+  async function saveEdit(id) {
+    // Auto-add if the user filled in the IP field but forgot to click Add
+    const pendingIp = document.getElementById(`ep-ip-${id}`);
+    if (pendingIp && pendingIp.value.trim()) addEditProto(id);
+    const name      = document.getElementById(`ei-name-${id}`).value.trim();
+    const group     = document.getElementById(`ei-group-${id}`).value;
+    const status    = document.getElementById(`ei-status-${id}`).value;
+    _captureEditProtos(id);
+    const protocols = (_editState[id] || {}).protos || [];
+    if (!name) { document.getElementById(`ei-name-${id}`).focus(); return; }
+    const res = await api(`/api/services/${id}`, 'PATCH', { name, group, status, protocols });
+    if (!res.ok) { const d = await res.json().catch(() => ({})); alert(d.error || 'Failed'); return; }
+    closeEdit(id);
+    renderAll();
+  }
+
+  function updateSvcSelects(services) {
+    const opts = '<option value="">All services</option>' +
+      services.map(s => `<option>${esc(s.name)}</option>`).join('');
+    document.getElementById('inc-svc').innerHTML = opts;
+    document.getElementById('mt-svc').innerHTML  = opts;
+  }
+
+  // ── Incidents ──────────────────────────────────────────────────────────────────
+
+  async function postIncident() {
+    const title = document.getElementById('inc-title').value.trim();
+    const svc   = document.getElementById('inc-svc').value || 'All services';
+    const msg   = document.getElementById('inc-msg').value.trim();
+    if (!title) { document.getElementById('inc-title').focus(); return; }
+    await api('/api/incidents', 'POST', { title, svc, message: msg });
+    document.getElementById('inc-title').value = '';
+    document.getElementById('inc-msg').value   = '';
+    renderIncList();
+  }
+
+  async function resolveInc(id) {
+    await api(`/api/incidents/${id}`, 'PATCH', { resolved: true });
+    renderIncList();
+  }
+
+  async function delInc(id) {
+    await api(`/api/incidents/${id}`, 'DELETE');
+    renderIncList();
+  }
+
+  async function renderIncList() {
+    const res = await api('/api/incidents');
+    const incidents = await res.json();
+    const el = document.getElementById('incList');
+    if (!incidents.length) { el.innerHTML = '<div class="empty">No incidents.</div>'; return; }
+    el.innerHTML = incidents.map(inc => `
+      <div class="inc-row">
+        <div class="inc-top">
+          <span class="inc-title-txt">${esc(inc.title)}</span>
+          <span class="inc-badge ${inc.resolved ? 'resolved' : 'ongoing'}">${inc.resolved ? 'resolved' : 'ongoing'}</span>
+        </div>
+        <div class="inc-sub">${esc(inc.svc)} · ${new Date(inc.created_at * 1000).toLocaleString()}</div>
+        ${inc.message ? `<div class="inc-msg">${esc(inc.message)}</div>` : ''}
+        <div class="inc-actions">
+          ${!inc.resolved ? `<button class="btn btn-ghost btn-sm" onclick="resolveInc(${inc.id})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>
+            Resolve
+          </button>` : ''}
+          <button class="btn btn-danger btn-sm" onclick="delInc(${inc.id})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          </button>
+        </div>
+      </div>`).join('');
+  }
+
+  // ── Maintenance ───────────────────────────────────────────────────────────────
+
+  async function addMaint() {
+    const title = document.getElementById('mt-title').value.trim();
+    const svc   = document.getElementById('mt-svc').value || 'All services';
+    const start = document.getElementById('mt-start').value;
+    const end   = document.getElementById('mt-end').value;
+    if (!title || !start) return;
+    await api('/api/maintenance', 'POST', { title, svc, start_at: start.replace('T',' '), end_at: end.replace('T',' ') });
+    document.getElementById('mt-title').value = '';
+    document.getElementById('mt-start').value = '';
+    document.getElementById('mt-end').value   = '';
+    renderMtList();
+  }
+
+  async function delMaint(id) {
+    await api(`/api/maintenance/${id}`, 'DELETE');
+    renderMtList();
+  }
+
+  async function renderMtList() {
+    const res = await api('/api/maintenance');
+    const mts = await res.json();
+    const el = document.getElementById('mtList');
+    if (!mts.length) { el.innerHTML = '<div class="empty">No scheduled maintenance.</div>'; return; }
+    el.innerHTML = mts.map(m => `
+      <div class="mt-row">
+        <div class="mt-top">
+          <span class="mt-title-txt">${esc(m.title)}</span>
+          <div class="mt-actions">
+            <span class="mt-badge">scheduled</span>
+            <button class="icon-btn" onclick="delMaint(${m.id})">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="mt-sub">${esc(m.svc)} · ${esc(m.start_at)} → ${esc(m.end_at)}</div>
+      </div>`).join('');
+  }
+
+  function onProtoChange(proto, portWrapId, rowId) {
+    const show   = proto === 'TCP' || proto === 'UDP' || proto === 'QUIC';
+    const portEl = document.getElementById(portWrapId);
+    const rowEl  = document.getElementById(rowId);
+    if (portEl) portEl.style.display = show ? '' : 'none';
+    if (rowEl)  rowEl.style.gridTemplateColumns = show ? '' : '1fr 1fr 68px';
+  }
+
+  async function renderAll() {
+    await renderGroupList();
+    await renderSvcList();
+    await renderIncList();
+    await renderMtList();
+  }
+
+  // On load: check if already authenticated
+  fetch('/api/services').then(res => {
+    if (res.ok) {
+      document.getElementById('viewLogin').style.display = 'none';
+      document.getElementById('viewAdmin').style.display = 'block';
+      renderAll();
+    }
+  }).catch(() => {});
+  </script>
+</body>
+</html>

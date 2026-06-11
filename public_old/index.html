@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bedrock — status</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="status.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/>
+            <line x1="12" y1="7" x2="5" y2="17"/><line x1="12" y1="7" x2="19" y2="17"/><line x1="5" y1="19" x2="19" y2="19"/>
+          </svg>
+        </div>
+        <span class="logo-text">bedrock</span>
+      </div>
+      <div class="header-right">
+        <span class="updated-label" id="updatedLabel">Updated just now</span>
+        <a href="/admin" class="admin-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="13" height="13"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Admin
+        </a>
+      </div>
+    </header>
+    <div class="inc-block">
+      <div class="banner" id="mainBanner">
+        <svg class="banner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span id="bannerText">All systems operational</span>
+        <svg class="banner-chev" id="bannerChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="13" height="13" style="display:none"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div id="incidentsSection" class="inc-section">
+        <div id="incidentsList"></div>
+      </div>
+    </div>
+    <div class="groups" id="statusGroups"></div>
+  </div>
+  <script>
+  let SERVICES  = [];
+  let INCIDENTS = [];
+  let incOpen   = false;
+  const openIds = new Set();
+
+  async function init() {
+    try {
+      const [svcRes, incRes] = await Promise.all([
+        fetch('/api/services'),
+        fetch('/api/incidents')
+      ]);
+      SERVICES  = svcRes.ok  ? await svcRes.json()  : [];
+      INCIDENTS = incRes.ok  ? await incRes.json()  : [];
+    } catch(e) {
+      SERVICES  = [];
+      INCIDENTS = [];
+    }
+    updateBanner();
+    renderIncidents();
+    renderGroups();
+    document.getElementById('updatedLabel').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  }
+
+  function updateBanner() {
+    const banner    = document.getElementById('mainBanner');
+    const text      = document.getElementById('bannerText');
+    const chev      = document.getElementById('bannerChev');
+    const allSt     = SERVICES.map(s => s.status);
+    const activeInc = INCIDENTS.filter(i => !i.resolved);
+    banner.className = 'banner';
+    banner.onclick = null;
+    chev.style.display = 'none';
+    if (allSt.includes('down')) {
+      banner.classList.add('err');
+      banner.querySelector('.banner-icon').innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>';
+      text.textContent = 'Some systems are down';
+    } else if (activeInc.length > 0) {
+      banner.classList.add('err', 'clickable');
+      banner.querySelector('.banner-icon').innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>';
+      text.textContent = activeInc.length === 1 ? 'Active incident' : `${activeInc.length} active incidents`;
+      chev.style.display = '';
+      banner.onclick = toggleIncidents;
+    } else if (allSt.includes('degraded')) {
+      banner.classList.add('warn');
+      banner.querySelector('.banner-icon').innerHTML = '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>';
+      text.textContent = 'Degraded performance detected';
+    } else {
+      banner.classList.add('ok');
+      text.textContent = 'All systems operational';
+    }
+  }
+
+  function toggleIncidents() {
+    const section = document.getElementById('incidentsSection');
+    const chev    = document.getElementById('bannerChev');
+    if (incOpen) {
+      // closing: pin current rendered height, then animate to 0
+      incOpen = false;
+      chev.classList.remove('open');
+      section.style.maxHeight = section.offsetHeight + 'px';
+      section.offsetHeight; // force reflow so browser sees the pinned height
+      section.style.maxHeight = '0';
+      section.style.opacity  = '0';
+    } else {
+      // opening: animate from 0 to actual content height
+      incOpen = true;
+      chev.classList.add('open');
+      section.style.maxHeight = section.scrollHeight + 'px';
+      section.style.opacity   = '1';
+      // once open, release the constraint so dynamic content changes work
+      section.addEventListener('transitionend', function unlock(e) {
+        if (e.propertyName === 'max-height' && incOpen) {
+          section.style.maxHeight = 'none';
+        }
+        section.removeEventListener('transitionend', unlock);
+      });
+    }
+  }
+
+  function renderIncidents() {
+    const active  = INCIDENTS.filter(i => !i.resolved);
+    const section = document.getElementById('incidentsSection');
+    if (!active.length) {
+      // collapse without animation on init
+      section.style.maxHeight = '0';
+      section.style.opacity   = '0';
+      incOpen = false;
+      return;
+    }
+    document.getElementById('incidentsList').innerHTML = active.map(inc => `
+      <div class="inc-card">
+        <div class="inc-card-top">
+          <span class="inc-dot"></span>
+          <span class="inc-card-title">${inc.title}</span>
+          <span class="inc-card-svc">${inc.svc}</span>
+        </div>
+        ${inc.message ? `<div class="inc-card-msg">${inc.message}</div>` : ''}
+        <div class="inc-card-time">${new Date(inc.created_at * 1000).toLocaleString()}</div>
+      </div>`).join('');
+  }
+
+  function segClass(h) {
+    if (h === null)  return 'nodata';
+    if (h.cls)       return h.cls;   // today: use live status directly
+    if (h.down)      return 'down';
+    if (h.pct < 100) return 'degraded';
+    return 'up';
+  }
+
+  function miniBar(history) {
+    return history.slice(-20)
+      .map(h => `<span class="mini-seg ${segClass(h)}"></span>`).join('');
+  }
+
+  function uptimeBar(history) {
+    return history.map((h, j) => {
+      const d   = history.length - j;
+      const lbl = d === 1 ? 'Today' : d === history.length ? '90 days ago' : `${d} days ago`;
+      const pctStr = h === null ? 'No data'
+                   : h.cls    ? h.cls.charAt(0).toUpperCase() + h.cls.slice(1)
+                   :            `${h.pct.toFixed(1)}%`;
+      return `<div class="seg ${segClass(h)}"><div class="seg-tip">${lbl} — ${pctStr}</div></div>`;
+    }).join('');
+  }
+
+  function buildItem(svc) {
+    const isOpen = openIds.has(svc.id);
+    return `
+      <div class="svc-item" id="item-${svc.id}">
+        <div class="svc-header" onclick="toggleSvc(${svc.id})" role="button" tabindex="0"
+             onkeydown="if(event.key==='Enter'||event.key===' ')toggleSvc(${svc.id})">
+          <div class="svc-left">
+            <svg class="chev${isOpen ? ' open' : ''}" id="chev-${svc.id}" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" aria-hidden="true" width="13" height="13">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+            <span class="svc-name">${svc.name}</span>
+          </div>
+          <div class="svc-right">
+            <div class="mini-bar-wrap${isOpen ? '' : ' visible'}" id="mini-${svc.id}">
+              <div class="mini-bar">${miniBar(svc.history)}</div>
+            </div>
+            <span class="svc-uptime">${Number(svc.uptime).toFixed(2)}% uptime</span>
+            <div class="sdot ${svc.status}"></div>
+          </div>
+        </div>
+        <div class="svc-body${isOpen ? ' open' : ' closed'}" id="body-${svc.id}">
+          <div class="svc-body-inner">
+            <div class="bar-labels">
+              <span class="bar-label">90 days ago</span>
+              <span class="bar-label">Today</span>
+            </div>
+            <div class="uptime-bar">${uptimeBar(svc.history)}</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderGroups() {
+    const groups = {};
+    SERVICES.forEach(s => {
+      const g = s.group || '';
+      if (!groups[g]) groups[g] = [];
+      groups[g].push(s);
+    });
+    let html = '';
+    (groups[''] || []).forEach(s => {
+      html += `<div class="svc-standalone">${buildItem(s)}</div>`;
+    });
+    Object.keys(groups).filter(g => g).forEach(g => {
+      html += `<div class="group-block"><div class="group-label">${g}</div><div class="group-wrap">${groups[g].map(s => buildItem(s)).join('')}</div></div>`;
+    });
+    document.getElementById('statusGroups').innerHTML = html;
+  }
+
+  function toggleSvc(id) {
+    const body = document.getElementById('body-' + id);
+    const mini = document.getElementById('mini-' + id);
+    const chev = document.getElementById('chev-' + id);
+    if (openIds.has(id)) {
+      openIds.delete(id);
+      body.classList.remove('open'); body.classList.add('closed');
+      chev.classList.remove('open');
+      setTimeout(() => mini && mini.classList.add('visible'), 200);
+    } else {
+      openIds.add(id);
+      mini && mini.classList.remove('visible');
+      setTimeout(() => {
+        body.classList.add('open'); body.classList.remove('closed');
+        chev.classList.add('open');
+      }, 10);
+    }
+  }
+
+  init();
+  </script>
+</body>
+</html>
