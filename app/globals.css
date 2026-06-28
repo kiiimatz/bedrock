@@ -327,4 +327,9 @@ body { min-height: 100%; }
   .row4 { grid-template-columns: 1fr 1fr; }
   .admin-header { flex-wrap: wrap; gap: 8px; }
   .row2 { grid-template-columns: 1fr; }
+
+  /* Status page: name truncation + fixed right side */
+  .svc-left { flex: 1; min-width: 0; }
+  .svc-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .svc-right { flex-shrink: 0; }
 }

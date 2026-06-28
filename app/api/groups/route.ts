@@ -2,7 +2,8 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { checkAuth, unauthorized } from '@/lib/auth';
 
 
-export async function GET() {
+export async function GET(request: Request) {
+  if (!await checkAuth(request)) return unauthorized();
   const { env } = await getCloudflareContext({ async: true });
   const { results } = await env.DB.prepare(
     'SELECT * FROM groups ORDER BY sort_order ASC, name ASC'
